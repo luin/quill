@@ -71,6 +71,7 @@ class TableRow extends Container {
   optimize(...args) {
     super.optimize(...args);
     this.children.forEach(child => {
+      child.optimize();
       if (child.next == null) return;
       const childFormats = child.formats();
       const nextFormats = child.next.formats();
@@ -101,7 +102,14 @@ class TableRow extends Container {
 TableRow.blotName = 'table-row';
 TableRow.tagName = 'TR';
 
-class TableBody extends Container {}
+class TableBody extends Container {
+  optimize(...args) {
+    super.optimize(...args);
+    this.children.forEach(child => {
+      child.optimize();
+    });
+  }
+}
 TableBody.blotName = 'table-body';
 TableBody.tagName = 'TBODY';
 

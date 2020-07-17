@@ -1,5 +1,6 @@
 import Delta from 'quill-delta';
 import Editor from '../../../core/editor';
+import Quill from '../../../core/quill';
 
 const tableDelta = new Delta()
   .insert('A1')
@@ -87,6 +88,15 @@ describe('Table', function() {
     );
     editor.formatLine(0, 5, { header: 1 });
     expect(this.container).toEqualHTML('<h1>Test</h1>');
+  });
+
+  it('append a new line', function() {
+    const quill = this.initialize(
+      Quill,
+      '<table><tr><td data-row="a">a</td></tr></table>',
+    );
+    quill.updateContents(new Delta([{ retain: 1 }, { insert: '\n' }]));
+    quill.getBounds(2, 0);
   });
 
   it('group rows', function() {
