@@ -9,8 +9,9 @@ function isLine(blot) {
 }
 
 class Scroll extends ScrollBlot {
-  constructor(registry, domNode, { emitter }) {
+  constructor(registry, domNode, { emitter, globalRegistry }) {
     super(registry, domNode);
+    this.globalRegistry = globalRegistry;
     this.emitter = emitter;
     this.batch = false;
     this.optimize();
@@ -22,6 +23,18 @@ class Scroll extends ScrollBlot {
     if (!Array.isArray(this.batch)) {
       this.batch = [];
     }
+  }
+
+  create(...args) {
+    try {
+      return this.registry.create(this, ...args);
+    } catch (err) {
+      return this.globalRegistry.create(this, ...args);
+    }
+  }
+
+  query(...args) {
+    return this.registry.query(...args) || this.globalRegistry.query(...args);
   }
 
   batchEnd() {
