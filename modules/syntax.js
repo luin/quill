@@ -166,10 +166,10 @@ SyntaxCodeBlock.requiredContainer = SyntaxCodeBlockContainer;
 SyntaxCodeBlock.allowedChildren = [CodeToken, CursorBlot, TextBlot, BreakBlot];
 
 class Syntax extends Module {
-  static register() {
-    Quill.register(CodeToken, true);
-    Quill.register(SyntaxCodeBlock, true);
-    Quill.register(SyntaxCodeBlockContainer, true);
+  static register(target) {
+    target.register(CodeToken, true);
+    target.register(SyntaxCodeBlock, true);
+    target.register(SyntaxCodeBlockContainer, true);
   }
 
   constructor(quill, options) {

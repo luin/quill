@@ -57,20 +57,16 @@ class Quill {
         globalRegistry.register(target);
       }
       if (typeof target.register === 'function') {
-        target.register(globalRegistry);
+        target.register(this);
       }
     }
   }
 
-  constructor(container, options = {}, registryTargets = {}) {
+  constructor(container, options = {}) {
     this.imports = {};
-    this.registry = new Parchment.Registry();
-    Object.keys(registryTargets).forEach(path =>
-      this.register(path, registryTargets[path]),
-    );
+    this.registry = new Parchment.Registry({ parent: globalRegistry });
 
     this.options = expandConfig.call(this, container, options);
-    this.options.registry = this.registry;
     this.container = this.options.container;
     if (this.container == null) {
       return debug.error('Invalid Quill container', container);
@@ -86,10 +82,8 @@ class Quill {
     this.root.classList.add('ql-blank');
     this.scrollingContainer = this.options.scrollingContainer || this.root;
     this.emitter = new Emitter();
-    const ScrollBlot = this.options.registry.query(
-      Parchment.ScrollBlot.blotName,
-    );
-    this.scroll = new ScrollBlot(this.options.registry, this.root, {
+    const ScrollBlot = this.registry.query(Parchment.ScrollBlot.blotName);
+    this.scroll = new ScrollBlot(this.registry, this.root, {
       emitter: this.emitter,
       globalRegistry,
     });
@@ -141,7 +135,7 @@ class Quill {
       this.registry.register(target);
     }
     if (typeof target.register === 'function') {
-      target.register(this.registry);
+      target.register(this);
     }
   }
 
@@ -484,6 +478,7 @@ function expandConfig(container, userConfig) {
   userConfig = merge(
     {
       container,
+      definitions: {},
       modules: {
         clipboard: true,
         keyboard: true,
@@ -493,6 +488,12 @@ function expandConfig(container, userConfig) {
     },
     userConfig,
   );
+
+  const { definitions } = userConfig;
+  Object.keys(definitions).forEach(path => {
+    this.register(path, definitions[path]);
+  });
+
   if (!userConfig.theme || userConfig.theme === this.DEFAULTS.theme) {
     userConfig.theme = Theme;
   } else {
