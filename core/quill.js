@@ -62,10 +62,13 @@ class Quill {
     }
   }
 
-  constructor(container, options = {}, registryTargets) {
+  constructor(container, options = {}, registryTargets = {}) {
     this.imports = {};
     this.registry = new Parchment.Registry();
-    this.register(registryTargets);
+    Object.keys(registryTargets).forEach(path =>
+      this.register(path, registryTargets[path]),
+    );
+
     this.options = expandConfig.call(this, container, options);
     this.options.registry = this.registry;
     this.container = this.options.container;
@@ -129,31 +132,16 @@ class Quill {
     this.allowReadOnlyEdits = false;
   }
 
-  register(path, target, overwrite = false) {
-    if (typeof path !== 'string') {
-      const name = path.attrName || path.blotName;
-      if (typeof name === 'string') {
-        // register(Blot | Attributor, overwrite)
-        this.register(`formats/${name}`, path, target);
-      } else {
-        Object.keys(path).forEach(key => {
-          this.register(key, path[key], target);
-        });
-      }
-    } else {
-      if (this.imports[path] != null && !overwrite) {
-        debug.warn(`Overwriting ${path} with`, target);
-      }
-      this.imports[path] = target;
-      if (
-        (path.startsWith('blots/') || path.startsWith('formats/')) &&
-        target.blotName !== 'abstract'
-      ) {
-        this.registry.register(target);
-      }
-      if (typeof target.register === 'function') {
-        target.register(this.registry);
-      }
+  register(path, target) {
+    this.imports[path] = target;
+    if (
+      (path.startsWith('blots/') || path.startsWith('formats/')) &&
+      target.blotName !== 'abstract'
+    ) {
+      this.registry.register(target);
+    }
+    if (typeof target.register === 'function') {
+      target.register(this.registry);
     }
   }
 
