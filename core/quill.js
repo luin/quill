@@ -10,6 +10,62 @@ import instances from './instances';
 import logger from './logger';
 import Theme from './theme';
 
+const functionalKeyCodes = [
+  0,
+  38,
+  39,
+  40,
+  37,
+  9,
+  16,
+  17,
+  18,
+  19,
+  20,
+  27,
+  33,
+  34,
+  35,
+  36,
+  45,
+  91,
+  93,
+  144,
+  145,
+  173,
+  174,
+  175,
+  176,
+  177,
+  178,
+  179,
+  255,
+  112,
+  113,
+  114,
+  115,
+  116,
+  117,
+  118,
+  119,
+  120,
+  121,
+  122,
+  123,
+  124,
+  125,
+  126,
+  127,
+  128,
+  129,
+  130,
+  131,
+  132,
+  133,
+  134,
+  135,
+];
+
 const debug = logger('quill');
 
 const globalRegistry = new Parchment.Registry();
@@ -87,6 +143,29 @@ class Quill {
     });
     this.editor = new Editor(this.scroll);
     this.selection = new Selection(this.scroll, this.emitter);
+    this.root.addEventListener('keydown', e => {
+      // IME keycode
+      if (e.keyCode === 229) {
+        return;
+      }
+
+      if (e.metaKey || e.ctrlKey || functionalKeyCodes.includes(e.keyCode)) {
+        return;
+      }
+
+      const range = this.getSelection();
+      if (range && range.length > 0) {
+        this.deleteText(range.index, range.length, Emitter.sources.USER);
+      }
+    });
+
+    this.root.addEventListener('compositionstart', () => {
+      const range = this.getSelection();
+      if (range && range.length > 0) {
+        this.deleteText(range.index, range.length, Emitter.sources.USER);
+      }
+    });
+
     this.theme = new this.options.theme(this, this.options); // eslint-disable-line new-cap
     this.keyboard = this.theme.addModule('keyboard');
     this.clipboard = this.theme.addModule('clipboard');
